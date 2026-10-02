@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Productos - Mi E-commerce{% endblock %}
+
+{% block content %}
+    <div class="productos-encabezado">
+        <h1>Catálogo de productos</h1>
+        <a class="boton-agregar" href="{% url 'productos:crea_producto' %}">Agregar nuevo producto + </a>
+    </div>
+    <hr>
+
+    <div id="productos"></div>
+
+    <script>
+
+        cargarProductos();
+
+        async function cargarProductos() {
+            try {
+                const response = await fetch('/productos/api/productos/');
+
+                if (!response.ok) {
+                    throw new Error(`Error al cargar los productos (${response.status})`);
+                }
+
+                const productos = await response.json();
+                const contenedor = document.getElementById('productos');
+                const formatoPrecio = new Intl.NumberFormat('es-CO', {
+                    maximumFractionDigits: 0
+                });
+
+                productos.forEach(producto => {
+                    const div = document.createElement('div');
+                    const precio = formatoPrecio.format(Number(producto.precio));
+
+                    div.innerHTML = `
+
+                    <h2>${producto.id}. ${producto.nombre}</h2>
+                    <p>Precio: $${precio}</p>
+                    <p>${producto.descripcion}</p>
+                    <a href="${producto.imagen_url}" target="_blank">
+                    <img src="${producto.imagen_url}" width="150" height="150" title="${producto.nombre}">
+                    </a>
+                    <hr>
+                `;
+
+                    contenedor.appendChild(div);
+                }); 
+            } catch (error) {
+                document.getElementById('productos').textContent = error.message;
+            }
+        }
+    </script>
+{% endblock %}
